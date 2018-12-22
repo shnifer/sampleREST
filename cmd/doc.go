@@ -1,15 +1,19 @@
 /*Тестовое задание. REST API
 
 Параметры сервиса задаются через переменные окружения.
+
 movieAPIServerAddr - порт http сервера. По умолчанию :80
+
 movieAPIDBSource - адрес базы postgres. По умолчанию:
-                   "user=postgres password=mypass dbname=movieAPI sslmode=disable"
+"user=postgres password=mypass dbname=movieAPI sslmode=disable"
+
 movieAPITokenSecret - ключ JWT-токенов. По умолчанию "secret"
 
 
 ============================
 
 POST /user
+
 Добавление нового пользователя
 
 параметры передаются multipart/form-data:
@@ -25,9 +29,11 @@ POST /user
  * 409 Conflict для неуникального login
  * 500 Internal Server Error при прочих ошибках SQL
 
+
 ============================
 
 Авторизация пользователя (бессрочная)
+
 POST /login
 
 параметры передаются multipart/form-data:
@@ -45,9 +51,11 @@ POST /login
  * 401 Unauthorized для неверной пары логин-пароль
  * 500 Internal Server Error при прочих ошибках SQL
 
+
 ============================
 
 Получение списка фильмов
+
 GET /movies
 
 параметры передаются url query:
@@ -89,9 +97,11 @@ GET /movies
  * 400 Bad Request для неправильно заполненых параметров
  * 500 Internal Server Error при ошибке SQL запроса
 
+
 ============================
 
 Получения списка подписок пользователя
+
 GET /rents
 
 требует токена авторизации в
@@ -129,9 +139,11 @@ Request header:
  * 400 Bad request при отсутствии токена или некорректных данных пагинации
  * 500 Internal Server Error при ошибке SQL запроса
 
+
 ============================
 
 Добавление фильма id в подписки пользователя
+
 PUT /rents/{id}
 
 требует токена авторизации в
@@ -146,9 +158,11 @@ Request header:
        или подписка уже оформлена)
  * 500 Internal Server Error при иных ошибках ошибке SQL запроса
 
+
 ============================
 
 Удаление фильма id из подписки пользователя
+
 DELETE /rents/{id}
 
 требует токена авторизации в
@@ -162,9 +176,11 @@ Request header:
        (подписки не существует)
  * 500 Internal Server Error при иных ошибках ошибке SQL запроса
 
+
 ============================
 
 Получение списка жанров
+
 GET /genres
 
 возвращает:
