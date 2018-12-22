@@ -12,9 +12,9 @@ movieAPITokenSecret - ключ JWT-токенов. По умолчанию "secr
 
 ============================
 
-POST /user
-
 Добавление нового пользователя
+
+POST /user
 
 параметры передаются multipart/form-data:
  - login, логин, обязательно
