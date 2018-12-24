@@ -64,9 +64,6 @@ func getMoviesHandler(ctx echo.Context) (err error) {
 	if err := ctx.Bind(&params); err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 	}
-	if _, err := params.Genres(); err != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
-	}
 
 	totalCount, err := db.GetMoviesTotalCount(params)
 	if err != nil {

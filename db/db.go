@@ -108,7 +108,7 @@ func getMoviesWhereQ(params datamodel.GetMoviesFilter) string {
 	}
 
 	//Предполагаем, что валидация уже проведена
-	genres, _ := params.Genres()
+	genres := params.Genres
 	if genres != "" {
 		add("genre in(%v)", genres)
 	}
@@ -187,19 +187,19 @@ func DelRent(login string, id int) error {
 	return nil
 }
 
-func GetGenres() (res []string, err error) {
-	res = make([]string, 0)
+func GetGenres() (res []datamodel.Genre, err error) {
+	res = make([]datamodel.Genre, 0)
 
-	rows, err := db.Query(`SELECT name FROM genres ORDER BY name`)
+	rows, err := db.Query(`SELECT id,name FROM genres ORDER BY id`)
 	if err != nil {
 		return nil, parsePGError(err)
 	}
-	var name string
+	var genre datamodel.Genre
 	for rows.Next() {
-		if err := rows.Scan(&name); err != nil {
+		if err := rows.Scan(&genre.Id, &genre.Name); err != nil {
 			return nil, err
 		}
-		res = append(res, name)
+		res = append(res, genre)
 	}
 	if rows.Err() != nil {
 		return nil, rows.Err()

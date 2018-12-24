@@ -1,6 +1,8 @@
 package main
 
-import "os"
+import (
+	"os"
+)
 
 // В рамках примера используем глобальную переменную для общих настроек.
 // По соглашениям проекта брали бы настройки из переменных окружений, флагов и/или файла настройки.
@@ -17,7 +19,7 @@ func init() {
 		Params.serverAddr = ":80"
 	}
 	if Params.dbSource, exist = os.LookupEnv("movieAPIDBSource"); !exist {
-		Params.dbSource = "user=postgres password=mypass dbname=movieAPI sslmode=disable"
+		Params.dbSource = "user=postgres password=postgres dbname=movieAPI sslmode=disable"
 	}
 	var str string
 	if str, exist = os.LookupEnv("movieAPITokenSecret"); !exist {

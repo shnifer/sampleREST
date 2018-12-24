@@ -5,7 +5,7 @@
 movieAPIServerAddr - порт http сервера. По умолчанию :80
 
 movieAPIDBSource - адрес базы postgres. По умолчанию:
-"user=postgres password=mypass dbname=movieAPI sslmode=disable"
+"user=postgres password=postgres dbname=movieAPI sslmode=disable"
 
 movieAPITokenSecret - ключ JWT-токенов. По умолчанию "secret"
 
@@ -60,9 +60,9 @@ GET /movies
 
 параметры передаются url query:
  Фильтры:
- - genres, фильтр множеством жанров, в json-формате []string.
+ - genres, фильтр множеством жанров, в формате genre_id разделенных запятыми.
    Не обязательный, если не указан отбираются все жанры. например:
-   genres=["horror", "comedy"]
+   genres=1,5,18
 
  - min_year, фильтр года выпуска, включительно.
  - max_year, Не обязательные, можно использовать один или оба.
@@ -84,13 +84,13 @@ GET /movies
         "id": 1,
         "title": "Home alone",
         "year": 1990,
-        "genre": "comedy"
+        "genre_id": 1
     },
     {
         "id": 2,
         "title": "Mask",
         "year": 1993,
-        "genre": "comedy"
+        "genre_id": 5
     }
 ]
 
@@ -126,13 +126,13 @@ Request header:
         "id": 1,
         "title": "Home alone",
         "year": 1990,
-        "genre": "comedy"
+        "genre_id": 1
     },
     {
         "id": 2,
         "title": "Mask",
         "year": 1993,
-        "genre": "comedy"
+        "genre_id": 5
     }
 ]
 
@@ -142,9 +142,9 @@ Request header:
 
 ============================
 
-Добавление фильма id в подписки пользователя
+Добавление фильма movie_id в подписки пользователя
 
-PUT /rents/{id}
+PUT /rents/{movie_id}
 
 требует токена авторизации в
 Request header:
@@ -161,9 +161,9 @@ Request header:
 
 ============================
 
-Удаление фильма id из подписки пользователя
+Удаление фильма movie_id из подписки пользователя
 
-DELETE /rents/{id}
+DELETE /rents/{movie_id}
 
 требует токена авторизации в
 Request header:
@@ -186,12 +186,16 @@ GET /genres
 возвращает:
  *200 OK, список жанров
    Body: application/json; charset=UTF-8
-   {
-    "action",
-    "comedy",
-    "drama",
-    "horror"
-   }
+[
+    {
+        "id": 1,
+        "name": "Комедия"
+    },
+    {
+        "id": 2,
+        "name": "Ужасы"
+    }
+]
 
  * 500 Internal Server Error при ошибках ошибке SQL запроса
 */
