@@ -2,6 +2,7 @@
 
 =================================
 
+Таблица пользователей
  CREATE TABLE users
  (
     id SERIAL PRIMARY KEY,
@@ -12,12 +13,14 @@
     contact_tel VARCHAR
  );
 
+Таблица жанров
  CREATE TABLE genres
  (
      id SERIAL PRIMARY KEY,
      name VARCHAR NOT NULL
  );
 
+Таблица фильмов
  CREATE TABLE movies
  (
     id SERIAL PRIMARY KEY,
@@ -26,6 +29,7 @@
     genre INTEGER NOT NULL REFERENCES genres
  );
 
+Таблица подписок
  CREATE TABLE rents
  (
     user_id INTEGER NOT NULL REFERENCES users,
