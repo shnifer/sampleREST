@@ -1,4 +1,4 @@
-package movieservice
+package main
 
 import (
 	"errors"
