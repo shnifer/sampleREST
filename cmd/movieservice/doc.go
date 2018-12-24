@@ -198,4 +198,4 @@ GET /genres
 
  * 500 Internal Server Error при ошибках ошибке SQL запроса
 */
-package main
+package movieservice
