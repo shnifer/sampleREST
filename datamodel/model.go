@@ -26,7 +26,7 @@ type Movie struct {
 	Genre int    `json:"genre_id"`
 }
 
-//Описание фильми. Соответствует записи db.movies
+//Описание жанра. Соответствует записи db.genres
 type Genre struct {
 	Id   int    `json:"id"`
 	Name string `json:"name"`

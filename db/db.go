@@ -11,13 +11,13 @@ import (
 
 var db *sql.DB
 
-//Ошибка, соответствующая Postgres ошибке c кодом 23505
+//Ошибка нарушения уникальности, соответствующая Postgres ошибке c кодом 23505
 var ErrorUnique = errors.New("unique violation")
 
-//Ошибка, соответствующая Postgres ошибке c кодом 23503
+//Ошибка нарушения внешнего ключа, соответствующая Postgres ошибке c кодом 23503
 var ErrorForeignKey = errors.New("foreign key violation")
 
-//Ошибка отсутствия удаляемого элемента
+//Ошибка отсутствия элемента
 var ErrorDoNotExist = errors.New("do not exist")
 
 //Open создаёт соединение с базой данных и сохраняет его в глобальной переменной пакета
@@ -43,7 +43,8 @@ VALUES ($1, $2, $3, $4, $5)
 	return parsePGError(err)
 }
 
-//CheckUser возвращает true если в базе есть пользователь user с паролем password
+//CheckUser возвращает userId, если в базе есть пользователь user с паролем password
+//если нет -- возвращает ошибку
 func CheckUser(user, password string) (userId int, err error) {
 	row := db.QueryRow(`SELECT id FROM users WHERE login=$1 AND password=$2`, user, password)
 	err = row.Scan(&userId)
@@ -166,7 +167,7 @@ func PutRent(userId int, movieId int) error {
 	return parsePGError(err)
 }
 
-//PutRent удаляет подписку пользователя login на фильм id
+//DelRent удаляет подписку пользователя c userId на фильм movieId
 func DelRent(userId int, movieId int) error {
 	result, err := db.Exec(`DELETE FROM rents WHERE user_id=$1 AND movie_id=$2`, userId, movieId)
 	if err != nil {
