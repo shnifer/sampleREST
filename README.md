@@ -26,7 +26,7 @@ go build github.com/shnifer/sampleREST/cmd/movieserice
 
 ```
 SET movieAPIDBSource="<postgres data source>"
-  (e.g. "user=postgres password=postgres dbname=movieAPI sslmode=disable")
+  (e.g. default "user=postgres password=postgres dbname=movieAPI sslmode=disable")
 SET movieAPITokenSecret="yourTokenKey"
 movieserice
 ```
