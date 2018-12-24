@@ -7,11 +7,11 @@ test work
 
 2) Download DB backup from https://github.com/shnifer/sampleREST/raw/master/db/movie.dump
 
-3) restore DB
+3) restore DB with /postgres/bin:
 
 ```
 createdb --username=postgres movieAPI
-pg_restore --username=postgres --dbname=test2 "<downloadPath>movie.dump"
+pg_restore --username=postgres --dbname=movieAPI "<downloadPath>movie.dump"
 (you will need to enter your password twice)
 ```
 
