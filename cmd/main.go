@@ -36,9 +36,9 @@ func main() {
 		//список аредованный пользователем фильмов
 		authGroup.GET("", getRentsHandler)
 		//добавить аренду
-		authGroup.PUT("/:id", putRentsHandler)
+		authGroup.PUT("/:movieId", putRentsHandler)
 		//завершить аренду
-		authGroup.DELETE("/:id", delRentsHandler)
+		authGroup.DELETE("/:movieId", delRentsHandler)
 	}
 
 	//не упомянутое в задание, но IMHO нужное

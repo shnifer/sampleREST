@@ -1,4 +1,3 @@
-//Пакет DB реализует функции непосредственного доступ к базе данных
 package db
 
 import (
@@ -38,20 +37,17 @@ func AddUser(newUser datamodel.User) error {
 	//Если возраст не указан будет записано 0.
 	//Можно сделать NULL, в зависимости от соглашений
 	_, err := db.Exec(
-		`INSERT INTO users(login,pass,name,age,contact_tel) 
+		`INSERT INTO users(login,password,name,age,contact_tel) 
 VALUES ($1, $2, $3, $4, $5)
 		`, newUser.Login, newUser.Password, newUser.Name, newUser.Age, newUser.ContactTel)
 	return parsePGError(err)
 }
 
 //CheckUser возвращает true если в базе есть пользователь user с паролем password
-func CheckUser(user, password string) bool {
-	row := db.QueryRow(`SELECT FROM users WHERE login=$1 AND pass=$2`, user, password)
-	err := row.Scan()
-	//считаем, что если что-то пошло не так на стороне БД,
-	//то это тоже ошибка авторизации.
-	//Отдельно ошибки не обрабатываем
-	return err == nil
+func CheckUser(user, password string) (userId int, err error) {
+	row := db.QueryRow(`SELECT id FROM users WHERE login=$1 AND password=$2`, user, password)
+	err = row.Scan(&userId)
+	return userId, err
 }
 
 //GetMovies возвращает список фильмов из DB по заданным в param фильтрам
@@ -130,14 +126,14 @@ func getMoviesWhereQ(params datamodel.GetMoviesFilter) string {
 //GetRentedMovies возвращает список фильмов,
 //на которые у пользователя login оформлена подписка,
 //с учётом пагинации
-func GetRentedMovies(login string, pagin datamodel.Pagination) (res []datamodel.Movie, err error) {
+func GetRentedMovies(userId int, pagin datamodel.Pagination) (res []datamodel.Movie, err error) {
 	res = make([]datamodel.Movie, 0)
 
 	rows, err := db.Query(`SELECT movies.id, movies.title, movies.year, movies.genre 
                    FROM movies JOIN rents ON (movies.id=rents.movie_id)
-                   WHERE rents.user_login=$1
+                   WHERE rents.user_id=$1
                    ORDER BY movies.id
-                   `+pagin.LimitOffsetQ(), login)
+                   `+pagin.LimitOffsetQ(), userId)
 	if err != nil {
 		return nil, err
 	}
@@ -157,22 +153,22 @@ func GetRentedMovies(login string, pagin datamodel.Pagination) (res []datamodel.
 	return res, nil
 }
 
-//GetRentedMoviesCount возвращает общее количество подписок у пользователя login
-func GetRentedMoviesCount(login string) (count int, err error) {
-	row := db.QueryRow("SELECT COUNT(*) FROM rents WHERE user_login=$1", login)
+//GetRentedMoviesCount возвращает общее количество подписок у пользователя c userId
+func GetRentedMoviesCount(userId int) (count int, err error) {
+	row := db.QueryRow("SELECT COUNT(*) FROM rents WHERE user_id=$1", userId)
 	err = row.Scan(&count)
 	return count, err
 }
 
-//PutRent добавляет подписку пользователя login на фильм id
-func PutRent(login string, id int) error {
-	_, err := db.Exec(`INSERT INTO rents (user_login, movie_id) VALUES ($1,$2)`, login, id)
+//PutRent добавляет подписку пользователя c userId на фильм movieId
+func PutRent(userId int, movieId int) error {
+	_, err := db.Exec(`INSERT INTO rents (user_id, movie_id) VALUES ($1,$2)`, userId, movieId)
 	return parsePGError(err)
 }
 
 //PutRent удаляет подписку пользователя login на фильм id
-func DelRent(login string, id int) error {
-	result, err := db.Exec(`DELETE FROM rents WHERE user_login=$1 AND movie_id=$2`, login, id)
+func DelRent(userId int, movieId int) error {
+	result, err := db.Exec(`DELETE FROM rents WHERE user_id=$1 AND movie_id=$2`, userId, movieId)
 	if err != nil {
 		return parsePGError(err)
 	}

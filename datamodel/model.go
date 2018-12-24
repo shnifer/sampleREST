@@ -47,11 +47,8 @@ func (gs *genresString) UnmarshalParam(src string) error {
 		if err != nil {
 			return err
 		}
-		if *gs != "" {
-			*gs += ","
-		}
-		*gs += genresString(part)
 	}
+	*gs += genresString(src)
 	return nil
 }
 
@@ -67,7 +64,9 @@ type GetMoviesFilter struct {
 	MaxYear int `query:"max_year"`
 }
 
-//Данные пагинации, лимит и смещение демонстрируемых записей.
+//Параметры пагинации, лимит и смещение демонстрируемых записей.
+//Предполагается, что пагинация опция, параметры которой должны заявляться клиентом явно.
+//Можно сделать пагинацию по умолчанию, и параметр для явной её отмены.
 type Pagination struct {
 	PageLimit  int `query:"page_limit"`
 	PageOffset int `query:"page_offset"`
