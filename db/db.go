@@ -9,8 +9,6 @@ import (
 	"strings"
 )
 
-var db *sql.DB
-
 //Ошибка нарушения уникальности, соответствующая Postgres ошибке c кодом 23505
 var ErrorUnique = errors.New("unique violation")
 
@@ -20,20 +18,8 @@ var ErrorForeignKey = errors.New("foreign key violation")
 //Ошибка отсутствия элемента
 var ErrorDoNotExist = errors.New("do not exist")
 
-//Open создаёт соединение с базой данных и сохраняет его в глобальной переменной пакета
-func Open(driver, source string) (err error) {
-	if db != nil {
-		if err := db.Close(); err != nil {
-			return err
-		}
-	}
-
-	db, err = sql.Open(driver, source)
-	return err
-}
-
 //AddUser добавляет пользователя newUser в db
-func AddUser(newUser datamodel.User) error {
+func AddUser(db *sql.DB, newUser datamodel.User) error {
 	//Если возраст не указан будет записано 0.
 	//Можно сделать NULL, в зависимости от соглашений
 	_, err := db.Exec(
@@ -45,20 +31,21 @@ VALUES ($1, $2, $3, $4, $5)
 
 //CheckUser возвращает userId, если в базе есть пользователь user с паролем password
 //если нет -- возвращает ошибку
-func CheckUser(user, password string) (userId int, err error) {
+func CheckUser(db *sql.DB, user, password string) (userId int, err error) {
 	row := db.QueryRow(`SELECT id FROM users WHERE login=$1 AND password=$2`, user, password)
 	err = row.Scan(&userId)
 	return userId, err
 }
 
 //GetMovies возвращает список фильмов из DB по заданным в param фильтрам
-func GetMovies(params datamodel.GetMoviesFilter) (res []datamodel.Movie, err error) {
+func GetMovies(db *sql.DB, params datamodel.GetMoviesFilter) (res []datamodel.Movie, err error) {
 	res = make([]datamodel.Movie, 0)
 
 	rows, err := db.Query(getMoviesQuery(params))
 	if err != nil {
 		return nil, err
 	}
+	defer rows.Close()
 
 	var movie datamodel.Movie
 	for rows.Next() {
@@ -88,7 +75,7 @@ func getMoviesQuery(params datamodel.GetMoviesFilter) string {
 }
 
 //GetMoviesTotalCount возвращает количество записей в таблице DB.movies по заданным фильтрам
-func GetMoviesTotalCount(params datamodel.GetMoviesFilter) (count int, err error) {
+func GetMoviesTotalCount(db *sql.DB, params datamodel.GetMoviesFilter) (count int, err error) {
 	whereQ := getMoviesWhereQ(params)
 	row := db.QueryRow("SELECT COUNT(*) FROM movies " + whereQ)
 	err = row.Scan(&count)
@@ -127,7 +114,7 @@ func getMoviesWhereQ(params datamodel.GetMoviesFilter) string {
 //GetRentedMovies возвращает список фильмов,
 //на которые у пользователя login оформлена подписка,
 //с учётом пагинации
-func GetRentedMovies(userId int, pagin datamodel.Pagination) (res []datamodel.Movie, err error) {
+func GetRentedMovies(db *sql.DB, userId int, pagin datamodel.Pagination) (res []datamodel.Movie, err error) {
 	res = make([]datamodel.Movie, 0)
 
 	rows, err := db.Query(`SELECT movies.id, movies.title, movies.year, movies.genre 
@@ -138,6 +125,7 @@ func GetRentedMovies(userId int, pagin datamodel.Pagination) (res []datamodel.Mo
 	if err != nil {
 		return nil, err
 	}
+	defer rows.Close()
 
 	var movie datamodel.Movie
 	for rows.Next() {
@@ -155,20 +143,20 @@ func GetRentedMovies(userId int, pagin datamodel.Pagination) (res []datamodel.Mo
 }
 
 //GetRentedMoviesCount возвращает общее количество подписок у пользователя c userId
-func GetRentedMoviesCount(userId int) (count int, err error) {
+func GetRentedMoviesCount(db *sql.DB, userId int) (count int, err error) {
 	row := db.QueryRow("SELECT COUNT(*) FROM rents WHERE user_id=$1", userId)
 	err = row.Scan(&count)
 	return count, err
 }
 
 //PutRent добавляет подписку пользователя c userId на фильм movieId
-func PutRent(userId int, movieId int) error {
+func PutRent(db *sql.DB, userId int, movieId int) error {
 	_, err := db.Exec(`INSERT INTO rents (user_id, movie_id) VALUES ($1,$2)`, userId, movieId)
 	return parsePGError(err)
 }
 
 //DelRent удаляет подписку пользователя c userId на фильм movieId
-func DelRent(userId int, movieId int) error {
+func DelRent(db *sql.DB, userId int, movieId int) error {
 	result, err := db.Exec(`DELETE FROM rents WHERE user_id=$1 AND movie_id=$2`, userId, movieId)
 	if err != nil {
 		return parsePGError(err)
@@ -184,13 +172,15 @@ func DelRent(userId int, movieId int) error {
 	return nil
 }
 
-func GetGenres() (res []datamodel.Genre, err error) {
+func GetGenres(db *sql.DB) (res []datamodel.Genre, err error) {
 	res = make([]datamodel.Genre, 0)
 
 	rows, err := db.Query(`SELECT id,name FROM genres ORDER BY id`)
 	if err != nil {
 		return nil, parsePGError(err)
 	}
+	defer rows.Close()
+
 	var genre datamodel.Genre
 	for rows.Next() {
 		if err := rows.Scan(&genre.Id, &genre.Name); err != nil {

@@ -1,17 +1,20 @@
 package main
 
 import (
+	"database/sql"
 	"github.com/labstack/echo"
 	"github.com/labstack/echo/middleware"
 	_ "github.com/lib/pq"
-	"github.com/shnifer/sampleREST/db"
 	"log"
 )
 
 func main() {
 
+	//Получаем параметры из переменных окружения
+	params := getParams()
+
 	//Устанавливаем соединение с БД, паникуем если что-то пошло не так
-	err := db.Open("postgres", Params.dbSource)
+	db, err := sql.Open("postgres", params.dbSource)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -22,29 +25,7 @@ func main() {
 	e.Use(middleware.Logger())
 	e.Use(middleware.Recover())
 
-	//добавление пользователя
-	e.POST("/users", postUsersHandler)
-	//авторизация
-	e.POST("/login", postLoginHandler)
-	//список фильмов
-	e.GET("/movies", getMoviesHandler)
+	addAllHandlers(e, db, params)
 
-	//группа под авторизацией
-	authGroup := e.Group("/rents")
-	authGroup.Use(middleware.JWT(Params.tokenSecret))
-	{
-		//список аредованный пользователем фильмов
-		authGroup.GET("", getRentsHandler)
-		//добавить аренду
-		authGroup.PUT("/:movieId", putRentsHandler)
-		//завершить аренду
-		authGroup.DELETE("/:movieId", delRentsHandler)
-	}
-
-	//не упомянутое в задание, но IMHO нужное
-	//если мы не хотим потом изменять список жанров,
-	//захардкоженный в 5 клиентах
-	e.GET("/genres", getGenresHandler)
-
-	e.Logger.Fatal(e.Start(Params.serverAddr))
+	e.Logger.Fatal(e.Start(params.serverAddr))
 }

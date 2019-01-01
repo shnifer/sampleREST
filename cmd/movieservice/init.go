@@ -6,14 +6,14 @@ import (
 
 // В рамках примера используем глобальную переменную для общих настроек.
 // По соглашениям проекта брали бы настройки из переменных окружений, флагов и/или файла настройки.
-var Params struct {
+type params struct {
 	serverAddr  string
 	tokenSecret []byte
 	dbSource    string
 }
 
 //читаем общие настройки.
-func init() {
+func getParams() (Params params) {
 	var exist bool
 	if Params.serverAddr, exist = os.LookupEnv("movieAPIServerAddr"); !exist {
 		Params.serverAddr = ":80"
@@ -28,4 +28,5 @@ func init() {
 		str = "secret"
 	}
 	Params.tokenSecret = []byte(str)
+	return Params
 }
